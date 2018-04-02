@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>jsPlumb</title>
+</head>
+<body>
+<div id="jsplumb_container"></div>
+</body>
+<script src="jsplumb.js"></script>
+<script>
+    let shareStroke = "#494e53",
+        debtStroke = "#072853";
+
+    let shareConnectorPaintStyle = {
+            strokeWidth: 2, stroke: shareStroke, outlineWidth: 6, outlineStroke: "transparent"
+        },
+        debtConnectorPaintStyle = {
+            strokeWidth: 2, stroke: debtStroke, outlineWidth: 6, outlineStroke: "transparent"
+        },
+        shareRelationshipConnectorPaintStyle = {
+            strokeWidth: 3, dashstyle: "4 2", stroke: shareStroke
+        },
+        debtRelationshipConnectorPaintStyle = {
+            strokeWidth: 3, dashstyle: "4 2", stroke: debtStroke
+        },
+        connectorHoverStyle = {
+            strokeWidth: 3, stroke: "#AED9AC"
+        };
+
+    jsPlumb.ready(function () {
+        instance = jsPlumb.getInstance({
+            // default drag options
+            DragOptions: {cursor: 'pointer', zIndex: 2000},
+            ConnectionOverlays: [
+                ["Arrow", {
+                    location: 1,
+                    visible: true,
+                    width: 11,
+                    length: 11,
+                    foldback: 1,
+                    id: "ARROW"
+                }]
+            ],
+            connectionsDetachable: false,
+            Container: "jsplumb_container"
+        });
+
+
+        //点击线条时可选样式
+        instance.registerConnectionTypes({
+            share: {
+                paintStyle: shareConnectorPaintStyle,
+                hoverPaintStyle: connectorHoverStyle,
+                anchors: ["Bottom", "Top"]
+            },
+            debt_borrow: {
+                paintStyle: debtConnectorPaintStyle,
+                hoverPaintStyle: connectorHoverStyle,
+                anchors: ["Top", "Bottom"]
+            },
+            debt_lend: {
+                paintStyle: debtConnectorPaintStyle,
+                hoverPaintStyle: connectorHoverStyle,
+                anchors: ["Bottom", "Top"]
+            },
+            share_relationship: {
+                paintStyle: shareRelationshipConnectorPaintStyle,
+                hoverPaintStyle: connectorHoverStyle,
+                anchors: ["Bottom", "Top"]
+            },
+            debt_relationship: {
+                paintStyle: debtRelationshipConnectorPaintStyle,
+                hoverPaintStyle: connectorHoverStyle,
+                anchors: ["Bottom", "Top"]
+            }
+        });
+
+    });
+
+
+    //    let firstIns = jsPlumb.getInstance();
+    //
+    //    firstIns.importDefaults({
+    //        Connector: ["Bezier", {curviness: 150}],
+    //        Anchors: ["TopCenter", "BottomCenter"]
+    //    });
+    //
+    //    firstIns.connect({
+    //        source:"el1",
+    //        target:"el2",
+    //        scope:"someScope"
+    //    });
+</script>
+</html>
