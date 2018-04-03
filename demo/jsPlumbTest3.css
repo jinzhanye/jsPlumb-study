@@ -5,6 +5,7 @@ body {
     -webkit-user-select: none;
     user-select: none;
 }
+
 .flowchart-demo {
     width: 800px;
     height: 600px;

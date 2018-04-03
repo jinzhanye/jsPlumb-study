@@ -2,26 +2,22 @@ jsPlumb.ready(function () {
 
 
     var DragFlow = function () {
-        var connectorPaintStyle = {
-                lineWidth: 4,
-                strokeStyle: "#61B7CF",
-                joinstyle: "round",
-                outlineColor: "#000",
-                outlineWidth: 2
-            },
-            connectorHoverStyle = {
+        var connectorHoverStyle = {//线条悬浮样式
                 lineWidth: 4,
                 strokeStyle: "#216477",
                 outlineWidth: 2,
                 outlineColor: "#000"
             },
-            endpointHoverStyle = {
-                fillStyle: "#216477",
-                strokeStyle: "#216477"
+
+            //TODO 没看到变化？
+            endpointHoverStyle = {//端点悬浮样式
+                fillStyle: "#77161d",
+                strokeStyle: "#14c000"
             },
             sourceEndpoint = {
                 // 端点（锚点）的样式声明（Dot 圆点样式）
                 endpoint: "Dot",
+                //连线样式
                 paintStyle: {
                     strokeStyle: "#7AB02C",
                     //[stroke] Stroke style, in valid CSS format (a hex code, name, or rgb value). You can use stroke on Endpoints to define a border.
@@ -33,21 +29,21 @@ jsPlumb.ready(function () {
                     radius: 7,
                     lineWidth: 3
                 },
+
+                //调用isSource判断是否为源点
                 isSource: true,
 
                 //Flowchart连接样式
+                // Flowchart：由一系列垂直或水平段组成的连接。支持四个参数，
+                // stub，默认为30；alwaysRespectStubs，默认为false；
+                // gap，默认为0；
+                // midpoint，默认为0.5；
+                // cornerRadius，默认为0；
                 connector: ["Flowchart", {stub: [40, 60], gap: 10, cornerRadius: 5, alwaysRespectStubs: true}],
                 // connectorStyle: connectorPaintStyle,
                 hoverPaintStyle: endpointHoverStyle,
                 connectorHoverStyle: connectorHoverStyle,
                 dragOptions: {},
-                // overlays: [
-                //     ["Label", {
-                //         location: [0.5, 1.5],
-                //         label: "Drag",
-                //         cssClass: "endpointSourceLabel"
-                //     }]
-                // ]
             },
             targetEndpoint = {
                 endpoint: "Dot",
@@ -124,6 +120,7 @@ jsPlumb.ready(function () {
             });
 
             // 立即生效
+            debugger
             instance.fire("jsPlumbDemoNodeAdded", instance);
 
             return instance;
