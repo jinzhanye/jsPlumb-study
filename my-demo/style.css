@@ -20,6 +20,10 @@
     box-shadow: 2px 2px 19px #444;
 }
 
+.window strong {
+    cursor: default;
+}
+
 #flowchartWindow1 {
     top: 34em;
     left: 5em;

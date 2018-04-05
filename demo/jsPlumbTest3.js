@@ -96,7 +96,7 @@ jsPlumb.ready(function () {
                 }
             });
 
-            //连接事件
+            //连接事件，与connectionMoved有什么区别??
             instance.bind("connection", function (info) {
                 info.connection.getOverlay("label").setLabel(info.connection.id);
                 //当连接成功后，将箭头上的label改为连接ID
@@ -120,7 +120,6 @@ jsPlumb.ready(function () {
             });
 
             // 立即生效
-            debugger
             instance.fire("jsPlumbDemoNodeAdded", instance);
 
             return instance;
