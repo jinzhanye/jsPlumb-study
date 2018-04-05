@@ -26,7 +26,7 @@ jsPlumb.ready(() => {
                     radius: 10,
                     stroke: "#333",
                 },
-                target: true,
+                isTarget: true,
                 connector: ["Flowchart", {stub: [40, 60], gap: 10, cornerRadius: 5, alwaysRespectStubs: true}],
             };
 
