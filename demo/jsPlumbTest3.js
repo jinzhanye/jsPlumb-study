@@ -39,7 +39,7 @@ jsPlumb.ready(function () {
                 // gap，默认为0；
                 // midpoint，默认为0.5；
                 // cornerRadius，默认为0；
-                connector: ["Flowchart", {stub: [40, 60], gap: 10, cornerRadius: 5, alwaysRespectStubs: true}],
+                connector: ["Flowchart", {stub: 30, gap: 10, cornerRadius: 5, alwaysRespectStubs: true}],
                 // connectorStyle: connectorPaintStyle,
                 hoverPaintStyle: endpointHoverStyle,
                 connectorHoverStyle: connectorHoverStyle,

@@ -1,7 +1,6 @@
 # jsPlumb入门
 
 ## 加载
-
 ````
 jsPlumb.ready(() => {
 	//jsPlumb加载完成，开始使用相关功能
@@ -11,7 +10,6 @@ jsPlumb.ready(() => {
 ````
 
 ## 容器
-
 一个jsPlumb实例对应一个容器作用域，通过元素id设置容器
 
 ````
