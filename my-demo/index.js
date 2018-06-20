@@ -94,8 +94,16 @@ jsPlumb.ready(() => {
             const instance = this.jsPlumbInstance;
 
             instance.shouldFireEvent = function () {
+                console.log('*********shouldFireEvent*********');
                 console.log(arguments);
+                // 如果绑定shouldFireEvent方法，则需要返回一个Boolean转型后不为false的值才会让事件触发
+                return true;
             };
+
+            instance.bind('manageElement', function () {
+                console.log('*********manageElement*********');
+                console.log(arguments);
+            });
 
             instance.batch(function () {
                 console.log('batch');

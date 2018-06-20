@@ -82,11 +82,92 @@
             }
         };
 
+        var _ensureContainer = function (candidate) {
+
+        };
+
         var _getContainerFromDefaults = function () {
             if (_currentInstance.Defaults.Container) {
                 _currentInstance.setContainer(_currentInstance.Defaults.Container);
             }
         };
+
+        var _manage = _currentInstance.manage = function (id, element, _transient) {
+            if (!managedElements[id]) {
+                managedElements[id] = {
+                    el: element,
+                    endpoints: [],
+                    connections: []
+                };
+
+                managedElements[id].info = _updateOffset({elId: id, timestamp: _suspendedAt});
+                // 非瞬时态就触发manageElement事件？？,查看源码调用_manage的地方_transient都不传参，也就是说，这个事件一定会触发
+                if (!_transient) {
+                    _currentInstance.fire('manageElement', {id: id, info: managedElements[id].info, el: element});
+                }
+            }
+
+            return managedElements[id];
+        };
+
+        /**
+         * 计算传入元素的offset与size，并缓存这些值。如果开发者传入'offset'，则直接返回这个值，否则重新进行计算
+         * 当params.recalc为true时，也需要重新进行计算
+         * @param params {Object}
+         * @private
+         * @returns {Object} {o: offsets[params,elId], s: sizes[params,elId]}
+         */
+        var _updateOffset = this.updateOffset = function (params) {
+
+            var timestamp = params.timestamp,
+                recalc = params.recalc,// 是不需要重新计算
+                offset = params.offset,
+                elId = params.elId,
+                s;
+
+            if (_suspendDrawing && !timestamp) {
+                timestamp = _suspendedAt;
+            }
+            if (!recalc) {// 直接从缓存或者开发者传入的参数里读取，不需要重新计算偏移
+                // TODO 为什么比较timestamp??
+                if (timestamp && timestamp === offsetTimestamps[elId]) {
+                    return {o: params.offset || offsets[elId], s: sizes[elId]};
+                }
+            }
+
+            if (recalc || (!offset && offsets[elId] == null)) {// 重新计算offset
+                s = managedElements[elId] ? managedElements[elId].el : null;
+                if (s != null) {
+                    // 缓存
+                    sizes[elId] = _currentInstance.getSize(s);
+                    offsets[elId] = _currentInstance.getOffset(s);
+                    offsetTimestamps[elId] = timestamp;
+                }
+            } else {
+                offsets[elId] = offset || offsets[id];
+                if (sizes[elId] == null) {
+                    s = managedElements[elId].el;
+                    if (s != null) {
+                        sizes[elId] = _currentInstance.getSize(s);
+                    }
+                }
+                offsetTimestamps[elId] = timestamp;
+            }
+            // 求右侧偏移量
+            // 为什么不直接用getBoundingClientRect求？？
+            if (offsets[elId] && !offsets[elId].right) {
+                offsets[elId].right = offsets[elId].left + sizes[elId][0];
+                offsets[elId].bottom = offsets[elId].top + sizes[elId][1];
+                offsets[elId].width = sizes[elId][0];
+                offsets[elId].height = sizes[elId][1];
+                // 中央点的x与y坐标
+                offsets[elId].centerx = offsets[elId].left + (offsets[elId].width / 2);
+                offsets[elId].centery = offsets[elId].top + (offsets[elId].height / 2);
+            }
+
+            return {o: offsets[elId], s: sizes[elId]};
+        };
+
         /**
          * callback from the current library to tell us to prepare ourselves (attach
          * mouse listeners etc; can't do that until the library has provided a bind method)
@@ -115,10 +196,18 @@
             // map of element id -> endpoint lists. an element can have an arbitrary
             // number of endpoints on it, and not all of them have to be connected
             // to anything.
-            endpointsByElement = {},
-            endpointsByUUID = {},
-            managedElements,
-            sizes = [],
+            endpointsByElement = {},// 以元素id作为key对应endpoint endpointsByElement[elId] = [endPoints]
+            endpointsByUUID = {}, //  以元素的uuid作为key对应endpoint
+            managedElements = {},
+            // managedElements是一个元素容器
+            // managedElements[elId] = {
+            //     el: element,
+            //     endpoints: [],
+            //     connections: []
+            // };
+            offsets = {},//offsets[elId] = {{left: el.offsetLeft, top: el.offsetTop}}
+            offsetTimestamps = {},// 计算offset时的时间戳
+            sizes = [],// line 7000 保存元素的宽与高 sizes[elId] = [ el.offsetWidth, el.offsetHeight ] offsetWidth = width + padding + border
             _suspendDrawing = false,
             _suspendedAt = null,
             _curIdStamp = 1,
@@ -137,8 +226,10 @@
 
         this.Anchors = {};
         this.Connectors = {"svg": {}};
+        // 锚点div容器内的svg容器相关配置
         this.Endpoints = {"svg": {}};
         this.Overlays = {"svg": {}};
+        // ConnectorRenderers存放渲染所需要的方法
         this.ConnectorRenderers = {};
         this.SVG = "svg";
 
@@ -158,7 +249,6 @@
             for (var i = 0, len = inputs.length; i < len; i++) {
                 p.source = _currentInstance.getElement(inputs[i]);
                 _ensureContainer(p.source);
-
                 var id = _getId(p.source);
                 var e = _newEndpoint(p, id);
 
@@ -169,9 +259,9 @@
                 if (!_suspendDrawing) {
                     e.paint({
                         anchorLoc: e.anchor.compute({
-                            xy:[myOffset.left, myOffset.top],
-                            wh:sizes[id],
-                            element:e,
+                            xy: [myOffset.left, myOffset.top],
+                            wh: sizes[id],
+                            element: e,
                             timestamp: _suspendedAt
                         }),
                         timestamp: _suspendedAt
@@ -195,6 +285,7 @@
          */
         _newEndpoint = function (params, id) {
             // TODO _currentInstance.Defaults.EndpointType??
+            // jsPlumb.Endpoint是一个Endpoint构造方法，见源码line 7393
             var endpointFunc = _currentInstance.Defaults.EndpointType || jsPlumb.Endpoint;
             var _p = jsPlumb.extend({}, params);
             _p._jsPlumb = _currentInstance;
@@ -208,7 +299,7 @@
             // 生成唯一id
             ep.id = "ep_" + _idstamp();
             //
-
+            _manage(_p.elementId, _p.source);
             if (!jsPlumb.headless) {
 
             }
@@ -247,7 +338,7 @@
 
 // --------------------- static instance + module registration -------------------------------------------
 
-    // 单例模式 create static instance and assign to window if window exists.
+    // create static instance and assign to window if window exists.
     var jsPlumb = new jsPlumbInstance();
     // 将一个jsPlumb绑定到全局，root即window
     root.jsPlumb = jsPlumb;

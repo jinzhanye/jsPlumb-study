@@ -136,7 +136,7 @@
          * @param event
          * @param listener
          * @param insertAtStart
-         * @returns {root.jsPlumbUtil.EventGenerator}
+         * @returns {jsPlumbInstance}
          */
         this.bind = function (event, listener, insertAtStart) {
             var _one = function(evt) {

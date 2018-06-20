@@ -4337,7 +4337,6 @@
 
 
         this.addEndpoint = function (el, params, referenceParams) {
-            debugger
             referenceParams = referenceParams || {};
             var p = jsPlumb.extend({}, referenceParams);
             jsPlumb.extend(p, params);
@@ -13849,9 +13848,9 @@
                 else {
                     p = _pos([ xy[0], xy[1] ]);
                 }
-
+                debugger
                 renderer.paint.apply(this, arguments);
-
+                // this.svg是svg节点对象
                 _attr(this.svg, {
                     "style": p,
                     "width": wh[0] || 0,
