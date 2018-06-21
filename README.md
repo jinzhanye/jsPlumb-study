@@ -38,6 +38,26 @@ jsPlumbInstance.addEndpoint(selectorId, endPoint, {anchor: position, uuid: UUID}
 ### 端点(endpoint)与锚(anchor)
 锚定义的是端点。例如一个端点可能在容器的上下左右等不同位置，是由锚决定的。
 
+### anchor
+
+BottomLeft 表示为 [0,1,0,1] 
+
+第一个[0,1]表示坐标，第二个[0,1]表示方向由[0,0]到[0,1]，即方向向下
+
+````            
+                    -1
+                    | 
+                    |
+                    |
+                    |
+ -1 ----------------0-------------------> 1 
+                    |
+                    |
+                    |
+                   \|/
+                     1
+````
+
 内置静态anchor总共有9个
 
 - Top (also aliased as TopCenter)

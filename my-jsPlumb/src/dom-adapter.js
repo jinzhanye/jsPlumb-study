@@ -32,7 +32,6 @@
                 var pid = _currentInstance.getId(p, null, true);
                 if (pid && _draggables[pid]) {
                     var pLoc = _currentInstance.getOffset(p);
-
                     if (_delements[pid][id] == null) {
                         var cLoc = _currentInstance.getOffset(el);
                         _delements[pid][id] = {

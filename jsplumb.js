@@ -7397,6 +7397,7 @@
         this.idPrefix = "_jsplumb_e_";
         this.defaultLabelLocation = [ 0.5, 0.5 ];
         this.defaultOverlayKeys = ["Overlays", "EndpointOverlays"];
+        debugger
         _jp.OverlayCapableJsPlumbUIComponent.apply(this, arguments);
 
 // TYPE
@@ -13848,7 +13849,6 @@
                 else {
                     p = _pos([ xy[0], xy[1] ]);
                 }
-                debugger
                 renderer.paint.apply(this, arguments);
                 // this.svg是svg节点对象
                 _attr(this.svg, {

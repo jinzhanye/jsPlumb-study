@@ -24,8 +24,9 @@ jsPlumb.ready(() => {
                 // gap 控制端口与线条之间的距离
                 // stub 控制源点与目标点，拐角到点之间的距离
                 //      如果只指定一个数字，则指定的是源点到拐角之间的距离，目标点到拐角的距离为自动
-                connector: ["Flowchart", {stub: [60,50], alwaysRespectStubs:true,gap:10,cornerRadius: 5}],
-                dragOptions: {},
+                connector: ["Flowchart"],
+                // connector: ["Flowchart", {stub: [60,50], alwaysRespectStubs:true,gap:10,cornerRadius: 5}],
+                // dragOptions: {},
             };
             this.targetEndpoint = {
                 endpoint: 'Dot',
@@ -35,7 +36,7 @@ jsPlumb.ready(() => {
                     stroke: "#333",
                 },
                 isTarget: true,
-                connector: ["Flowchart", {gap:10,cornerRadius: 5}],
+                connector: ["Flowchart", {gap: 10, cornerRadius: 5}],
             };
 
             this.jsPlumbInstance = null;
@@ -148,7 +149,7 @@ jsPlumb.ready(() => {
         addEndPoint(selectorId) {
             const self = this;
 
-            function addEndPointForEach(arr, endPoint, selectorId) {
+            function addEndPointForEach(arr, endPointConfig, selectorId) {
                 return function () {
                     arr.forEach((anchor) => {
                         let UUID;
@@ -159,7 +160,14 @@ jsPlumb.ready(() => {
                         }
 
                         // el, params, referenceParams
-                        self.jsPlumbInstance.addEndpoint(selectorId, endPoint, {anchor: anchor, uuid: UUID});
+                        let endpoint = self.jsPlumbInstance.addEndpoint(selectorId, endPointConfig, {
+                            anchor,
+                            uuid: UUID
+                        });
+                        console.log('new a endpoint:', endpoint);
+                        endpoint.bind('click', function (endpoint) {
+                            console.log('you clicked on ', endpoint);
+                        });
                     });
                 }
             }

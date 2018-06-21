@@ -7,7 +7,73 @@
 
     var _ju = root.jsPlumbUtil,
         // tap与click两者都会在点击时触发，但是在手机WEB端，click会有 200~300 ms。
-        events = ["tap", "dbltap", "click", "dblclick", "mouseover", "mouseout", "mousemove", "mousedown", "mouseup", "contextmenu"];
+        events = ["tap", "dbltap", "click", "dblclick", "mouseover", "mouseout", "mousemove", "mousedown", "mouseup", "contextmenu"],
+
+// ------------------------------ BEGIN jsPlumbUIComponent --------------------------------------------
+        jsPlumbUIComponent = root.jsPlumbUIComponent = function (params) {
+            _ju.EventGenerator.apply(this, arguments);
+
+            var self = this,
+                a = arguments,
+                idPrefix = self.idPrefix,
+                id = idPrefix + (new Date()).getTime();
+
+            this._jsPlumb = {
+                instance: params._jsPlumb,
+                parameters: params.parameters || {},
+                paintStyle: null,
+                hoverPaintStyle: null,
+                paintStyleInUse: null,
+                hover: false,
+                beforeDetach: params.beforeDetach,
+                beforeDrop: params.beforeDrop,
+                overlayPlacements: [],
+                hoverClass: params.hoverClass || params._jsPlumb.Defaults.HoverClass,
+                types: [],
+                typeCache: {}
+            };
+        };
+
+    _ju.extend(root.jsPlumbUIComponent, _ju.EventGenerator, {
+        getParameter: function (name) {
+            return this._jsPlumb.parameters[name];
+        },
+
+        setParameter: function (name, value) {
+            this._jsPlumb.parameters[name] = value;
+        },
+
+        getParameters: function () {
+            return this._jsPlumb.parameters;
+        },
+
+        setParameters: function (p) {
+            this._jsPlumb.parameters = p;
+        },
+
+        getClass: function () {
+            return jsPlumb.getClass(this.canvas);
+        },
+
+        hasClass: function (clazz) {
+            return jsPlumb.hasClass(this.canvas, clazz);
+        },
+
+        addClass: function (clazz) {
+            jsPlumb.addClass(this.canvas, clazz);
+        },
+
+        removeClass: function (clazz) {
+            jsPlumb.removeClass(this.canvas, clazz);
+        },
+
+        updateClasses: function (classesToAdd, classesToRemove) {
+            jsPlumb.updateClasses(this.canvas, classesToAdd, classesToRemove);
+        },
+        // ........
+    });
+// ------------------------------ END jsPlumbUIComponent --------------------------------------------
+
 
     var jsPlumbInstance = root.jsPlumbInstance = function (_defaults) {
         this.version = "2.6.9";
@@ -142,6 +208,69 @@
             return _currentInstance;
         };
 
+        // 恢复默认配置
+        _currentInstance.restoreDefaults = function () {
+            _currentInstance.Defaults = jsPlumb.extend({}, _initialDefaults);
+            return _currentInstance;
+        };
+
+        var log = null,
+            initialized = false,
+            // map of element id -> endpoint lists. an element can have an arbitrary
+            // number of endpoints on it, and not all of them have to be connected
+            // to anything.
+            endpointsByElement = {},// 以元素id作为key对应endpoint endpointsByElement[elId] = [endPoints]
+            endpointsByUUID = {}, //  以元素的uuid作为key对应endpoint
+            managedElements = {},
+            // managedElements是一个元素容器
+            // managedElements[elId] = {
+            //     el: element,
+            //     endpoints: [],
+            //     connections: []
+            // };
+            offsets = {},//offsets[elId] = {{left: el.offsetLeft, top: el.offsetTop}}
+            offsetTimestamps = {},// 计算offset时的时间戳
+            sizes = [],// line 7000 保存元素的宽与高 sizes[elId] = [ el.offsetWidth, el.offsetHeight ] offsetWidth = width + padding + border
+            _suspendDrawing = false,
+            _suspendedAt = null,
+            _curIdStamp = 1,
+            _idstamp = function () {
+                return "" + _curIdStamp++;
+            },
+
+            /*
+             factory method to prepare a new endpoint.  this should always be used instead of creating Endpoints
+             manually, since this method attaches event listeners and an id.
+             */
+            _newEndpoint = function (params, id) {
+                // .Defaults.EndpointType 在源码中有其他地方也未见使用，这是留给开发者自己配置的？？
+                // jsPlumb.Endpoint是一个Endpoint构造方法，见源码line 7393
+                var endpointFunc = _currentInstance.Defaults.EndpointType || jsPlumb.Endpoint;
+                var _p = jsPlumb.extend({}, params);
+                _p._jsPlumb = _currentInstance;
+                _p.newConnection = _newConnection;
+                _p.newEndpoint = _newEndpoint;
+                _p.endpointsByUUID = endpointsByUUID;
+                _p.endpointsByElement = endpointsByElement;
+                _p.fireDetachEvent = fireDetachEvent;
+                _p.elementId = id || _getId(_p.source);
+                var ep = new endpointFunc(_p);
+                // 生成唯一id
+                ep.id = "ep_" + _idstamp();
+                //
+                _manage(_p.elementId, _p.source);
+                if (!jsPlumb.headless) {
+                    // 记录当前endpoint与container的距离
+                    _currentInstance.getDragManager().endpointAdded(_p.source, id);
+                }
+
+                return ep;
+            },
+
+            _getId = function (element, uuid, doNotCreateIfNotFound) {
+
+            };
+
         var _ensureContainer = function (candidate) {
 
         };
@@ -243,62 +372,65 @@
             }
         }.bind(this);
 
-        var log = null,
-            initialized = false,
-            // map of element id -> endpoint lists. an element can have an arbitrary
-            // number of endpoints on it, and not all of them have to be connected
-            // to anything.
-            endpointsByElement = {},// 以元素id作为key对应endpoint endpointsByElement[elId] = [endPoints]
-            endpointsByUUID = {}, //  以元素的uuid作为key对应endpoint
-            managedElements = {},
-            // managedElements是一个元素容器
-            // managedElements[elId] = {
-            //     el: element,
-            //     endpoints: [],
-            //     connections: []
-            // };
-            offsets = {},//offsets[elId] = {{left: el.offsetLeft, top: el.offsetTop}}
-            offsetTimestamps = {},// 计算offset时的时间戳
-            sizes = [],// line 7000 保存元素的宽与高 sizes[elId] = [ el.offsetWidth, el.offsetHeight ] offsetWidth = width + padding + border
-            _suspendDrawing = false,
-            _suspendedAt = null,
-            _curIdStamp = 1,
-            _idstamp = function () {
-                return "" + _curIdStamp++;
-            },
+        this.log = log;
+        this.jsPlumbUIComponent = jsPlumbUIComponent;
 
-            /*
-             factory method to prepare a new endpoint.  this should always be used instead of creating Endpoints
-             manually, since this method attaches event listeners and an id.
-             */
-            _newEndpoint = function (params, id) {
-                // TODO _currentInstance.Defaults.EndpointType??
-                // jsPlumb.Endpoint是一个Endpoint构造方法，见源码line 7393
-                var endpointFunc = _currentInstance.Defaults.EndpointType || jsPlumb.Endpoint;
-                var _p = jsPlumb.extend({}, params);
-                _p._jsPlumb = _currentInstance;
-                _p.newConnection = _newConnection;
-                _p.newEndpoint = _newEndpoint;
-                _p.endpointsByUUID = endpointsByUUID;
-                _p.endpointsByElement = endpointsByElement;
-                _p.fireDetachEvent = fireDetachEvent;
-                _p.elementId = id || _getId(_p.source);
-                var ep = new endpointFunc(_p);
-                // 生成唯一id
-                ep.id = "ep_" + _idstamp();
-                //
-                _manage(_p.elementId, _p.source);
-                if (!jsPlumb.headless) {
-                    // 记录一些位置信息
-                    _currentInstance.getDragManager().endpointAdded(_p.source, id);
+        /*
+         * Creates an anchor with the given params.
+         *
+         *
+         * Returns: The newly created Anchor.
+         * Throws: an error if a named anchor was not found.
+         */
+        this.makeAnchor = function () {
+            var pp, _a = function (t, p) {
+                if (root.jsPlumb.Anchors[t]) {
+                    return new root.jsPlumb.Anchors[t](p);
                 }
-
-                return ep;
-            },
-
-            _getId = function (element, uuid, doNotCreateIfNotFound) {
-
+                if (!_currentInstance.Defaults.DoNotThrowErrors) {
+                    throw {msg: "jsPlumb: unknown anchor type '" + t + "'"};
+                }
             };
+            if (arguments.length === 0) {
+                return null;
+            }
+
+            var specimen = arguments[0],
+                elementId = arguments[1],
+                jsPlumbInstance = arguments[2],
+                newAnchor = null;
+
+            // if it appears to be an anchor already...
+            // 如果它看起来已经像个锚点？？
+            if (specimen.compute && specimen.getOrientation) {
+                return specimen;
+            } else if (typeof specimen === "string") {
+                // TODO
+            } else if (_ju.isArray(specimen)) {
+                if (_ju.isArray(specimen[0]) || _ju.isString(specimen[0])) {
+                    // TODO
+                } else {
+                    var anchorParams = {
+                        x: specimen[0],
+                        y: specimen[1],
+                        orientation: (specimen.length >= 4) ? [specimen[2], specimen[3]] : [0, 0],
+                        offsets: (specimen.length >= 6) ? [specimen[4], specimen[5]] : [0, 0],
+                        elementId: elementId,
+                        jsPlumbInstance: _currentInstance,
+                        cssClass: specimen.length === 7 ? specimen[6] : null
+                    };
+                    newAnchor = new root.jsPlumb.Anchor(anchorParams);
+                    newAnchor.clone = function () {
+                        return new root.jsPlumb.Anchor(anchorParams);
+                    };
+                }
+            }
+
+            if (!newAnchor.id) {
+                newAnchor.id = "anchor_" + _idstamp();
+            }
+            return newAnchor;
+        };
 // --------------------- end makeSource/makeTarget ----------------------------------------------
 
         this.ready = function (fn) {
@@ -320,15 +452,23 @@
         // --------------------------- jsPlumbInstance public API ---------------------------------------------------------
 
 
+        /**
+         * 传入一个el则返回一个endpoint对象，传入多个el则返回endpoint数组
+         * 在方法内部params会与referenceParams合并，referenceParams只是用来为开发者提供便利的数据共享
+         * @param el
+         * @param params
+         * @param referenceParams
+         * @returns {Array}
+         */
         this.addEndPoint = function (el, params, referenceParams) {
             referenceParams = referenceParams || {};
             var p = jsPlumb.extend({}, referenceParams);
             jsPlumb.extend(p, params);
-            p.endpoint = p.endpoint || _currentInstance.Defaults.Endpoint;
-            p.paintStyle = p.paintStyle || _currentInstance.Defaults.EndpointStyle;
+            p.endpoint = p.endpoint || _currentInstance.Defaults.Endpoint;// 默认为"Dot"
+            p.paintStyle = p.paintStyle || _currentInstance.Defaults.EndpointStyle; // 默认为{fill: "#456"}，即填充绿色
 
             var results = [],
-                // 统一用数组处理
+                // 统一用数组处理传入的元素
                 inputs = (_ju.isArray(el) || (el.length != null && !_ju.isString(el))) ? el : [el];
 
             for (var i = 0, len = inputs.length; i < len; i++) {

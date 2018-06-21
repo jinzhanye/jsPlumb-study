@@ -27,7 +27,24 @@ jsPlumb.ready(()=> {
 jsPlumb.getInstance内部会new jsPlumb实例，同时做一些其他处理
 
 ## 继承关系
-事件类
+事件类 
+EndPoint --line 7400--> OverlayCapableJsPlumbUIComponent -> JsPlumbUIComponent -> EventGenerator
+
+Anchor --line 10015--> EventGenerator
+
+jsPlumbInstance持有jsPlumbUIComponent
+this.jsPlumbUIComponent = jsPlumbUIComponent;
+
+````js
+var anchorParams = {
+    x: specimen[0], y: specimen[1],
+    orientation: (specimen.length >= 4) ? [ specimen[2], specimen[3] ] : [0, 0],
+    offsets: (specimen.length >= 6) ? [ specimen[4], specimen[5] ] : [ 0, 0 ],
+    elementId: elementId,
+    jsPlumbInstance: _currentInstance,
+    cssClass: specimen.length === 7 ? specimen[6] : null
+};
+````
 
 ## 事件
 DOM事件
@@ -49,3 +66,4 @@ on -> fire -> bind
 
 ##
 __jsPlumb
+Anchor 是jsPlumb的一等公民！
