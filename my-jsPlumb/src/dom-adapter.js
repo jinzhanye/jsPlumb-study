@@ -2,14 +2,70 @@
 
     var root = this, _ju = root.jsPlumbUtil;
 
+    var DragManager = function (_currentInstance) {
+        var _draggables = {},
+            _dlist = [],
+            _delements = {},
+            //  保存孩子节点到父节点的距离
+            // _delements[pid][id] = {
+            //    id: id,
+            //    offset: {
+            //        left: cLoc.left - pLoc.left,
+            //        top: cLoc.top - pLoc.top
+            //     }
+            //  };
+            _elementsWithEndpoints = {},// 存放元素的endpoint数量 _elementsWithEndpoints[elId] = endpointsCount
+            // elementids mapped to the draggable to which they belong.
+            // _draggablesForElements[elId] = parentId;
+            _draggablesForElements = {};
+
+        this.endpointAdded = function (el, id) {
+            id = id || _currentInstance.getId(el);
+
+            var b = document.body,
+                p = el.parentNode;
+
+            _elementsWithEndpoints[id] = _elementsWithEndpoints[id] ? _elementsWithEndpoints[id] + 1 : 1;
+
+            while (p != null && p !== b) {
+                var pid = _currentInstance.getId(p, null, true);
+                if (pid && _draggables[pid]) {
+                    var pLoc = _currentInstance.getOffset(p);
+
+                    if (_delements[pid][id] == null) {
+                        var cLoc = _currentInstance.getOffset(el);
+                        _delements[pid][id] = {
+                            id: id,
+                            offset: {
+                                left: cLoc.left - pLoc.left,
+                                top: cLoc.top - pLoc.top
+                            }
+                        };
+                        _draggablesForElements[id] = pid;
+                    }
+                    break;
+                }
+                p = p.parentNode;
+            }
+        };
+
+    };
     root.jsPlumb.extend(root.jsPlumbInstance.prototype, {
+        getDragManager: function () {
+            if (this.dragManager == null) {
+                this.dragManager = new DragManager(this);
+            }
+
+            return this.dragManager;
+        },
+
         createElement: function (tag, style, clazz, atts) {
             return this.createElementNS(null, tag, style, clazz, atts);
         },
         /**
          *
-         * @param ns
-         * @param tag
+         * @param ns 命名空间
+         * @param tag html标签
          * @param style {Object} style样式
          * @param clazz {String} className
          * @param atts {Object} 元素属性
@@ -49,8 +105,8 @@
                     top: el.offsetTop
                 },
                 // 判断该相对于哪个元素作为相对元素计算
-                op = (relativeToRoot  || (container != null && (el !== container && el.offsetParent !== container))) ?  el.offsetParent : null,
-                _maybeAdjustScroll = function(offsetParent) {
+                op = (relativeToRoot || (container != null && (el !== container && el.offsetParent !== container))) ? el.offsetParent : null,
+                _maybeAdjustScroll = function (offsetParent) {
                     if (offsetParent != null && offsetParent !== document.body && (offsetParent.scrollTop > 0 || offsetParent.scrollLeft > 0)) {
                         out.left -= offsetParent.scrollLeft;
                         out.top -= offsetParent.scrollTop;

@@ -25,12 +25,27 @@ let jsPlumbInstance = jsPlumb.getInstance({
 addEndpoint是jsPlumb提供的API，用于为容器内的元素添加端点
 
 ````
-//selectorId 容器内的元素id，endPoint
-//endPoint
+//selectorId 端点所附着的容器的id
+//endPoint 端点对象
 //anchor 上下左右等多个位置
 //uuid 连接两个端点时使用
 jsPlumbInstance.addEndpoint(selectorId, endPoint, {anchor: position, uuid: UUID});
 ````
+
+### 端点(endpoint)与锚(anchor)
+锚定义的是端点。例如一个端点可能在容器的上下左右等不同位置，是由锚决定的。
+
+内置静态anchor总共有9个
+
+- Top (also aliased as TopCenter)
+- TopRight
+- Right (also aliased as RightMiddle)
+- BottomRight
+- Bottom (also aliased as BottomCenter)
+- BottomLeft
+- Left (also aliased as LeftMiddle)
+- TopLeft
+- Center
 
 ## 端点
 

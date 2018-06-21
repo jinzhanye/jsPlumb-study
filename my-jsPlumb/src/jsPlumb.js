@@ -9,7 +9,7 @@
         events = ["tap", "dbltap", "click", "dblclick", "mouseover", "mouseout", "mousemove", "mousedown", "mouseup", "contextmenu"];
 
     var jsPlumbInstance = root.jsPlumbInstance = function (_defaults) {
-        this.version = "<% pkg.version %>";
+        this.version = "2.6.9";
         // 将开发者传入的参数覆盖到Defaults
         if (_defaults) {
             jsPlumb.extend(this.Defaults, _defaults);
@@ -76,10 +76,44 @@
                 _oneDelegate(events[i]);
             }
 
-            // managed elements
+            // 将元素从旧container移动新的container
             for (var elId in managedElements) {
-
+                var el = managedElements[elId].el;
+                if (el.parentNode === previousContainer) {
+                    previousContainer.removeChild(el);
+                    _container.appendChild(el);
+                }
             }
+        };
+
+
+        this.getContainer = function () {
+            return _container;
+        };
+
+        this.bind = function (event, fn) {
+            if ('ready' === event && initialized) {
+                fn();
+            } else {
+                _bb.apply(_currentInstance, [event, fn]);
+            }
+        };
+
+        /**
+         *  修改当前jsPlumb实例默认配置
+         * @param d {Object} 配置对象
+         * @returns {jsPlumb} jsPlumb对象
+         */
+        _currentInstance.importDefaults = function (d) {
+            for (var i in d) {
+                _currentInstance.Defaults[i] = d[i];
+            }
+
+            if (d.Container) {
+                _currentInstance.setContainer(d.Container);
+            }
+
+            return _currentInstance;
         };
 
         var _ensureContainer = function (candidate) {
@@ -183,14 +217,6 @@
             }
         }.bind(this);
 
-        this.bind = function (event, fn) {
-            if ('ready' === event && initialized) {
-                fn();
-            } else {
-                _bb.apply(_currentInstance, [event, fn]);
-            }
-        };
-
         var log = null,
             initialized = false,
             // map of element id -> endpoint lists. an element can have an arbitrary
@@ -213,6 +239,39 @@
             _curIdStamp = 1,
             _idstamp = function () {
                 return "" + _curIdStamp++;
+            },
+
+            /*
+             factory method to prepare a new endpoint.  this should always be used instead of creating Endpoints
+             manually, since this method attaches event listeners and an id.
+             */
+            _newEndpoint = function (params, id) {
+                // TODO _currentInstance.Defaults.EndpointType??
+                // jsPlumb.Endpoint是一个Endpoint构造方法，见源码line 7393
+                var endpointFunc = _currentInstance.Defaults.EndpointType || jsPlumb.Endpoint;
+                var _p = jsPlumb.extend({}, params);
+                _p._jsPlumb = _currentInstance;
+                _p.newConnection = _newConnection;
+                _p.newEndpoint = _newEndpoint;
+                _p.endpointsByUUID = endpointsByUUID;
+                _p.endpointsByElement = endpointsByElement;
+                _p.fireDetachEvent = fireDetachEvent;
+                _p.elementId = id || _getId(_p.source);
+                var ep = new endpointFunc(_p);
+                // 生成唯一id
+                ep.id = "ep_" + _idstamp();
+                //
+                _manage(_p.elementId, _p.source);
+                if (!jsPlumb.headless) {
+                    // 记录一些位置信息
+                    _currentInstance.getDragManager().endpointAdded(_p.source, id);
+                }
+
+                return ep;
+            },
+
+            _getId = function (element, uuid, doNotCreateIfNotFound) {
+
             };
 // --------------------- end makeSource/makeTarget ----------------------------------------------
 
@@ -222,7 +281,6 @@
 
         this.connectorClass = "jtk-connector";
         this.draggingClass = "jtk-dragging";// CONVERTED
-        this.Anchors = {};
 
         this.Anchors = {};
         this.Connectors = {"svg": {}};
@@ -234,6 +292,7 @@
         this.SVG = "svg";
 
         // --------------------------- jsPlumbInstance public API ---------------------------------------------------------
+
 
         this.addEndPoint = function (el, params, referenceParams) {
             referenceParams = referenceParams || {};
@@ -278,35 +337,27 @@
         this.connect = this.connect = function (params, referenceParams) {
 
         };
+        this.getId = _getId;
+    };
 
-        /*
-         factory method to prepare a new endpoint.  this should always be used instead of creating Endpoints
-         manually, since this method attaches event listeners and an id.
-         */
-        _newEndpoint = function (params, id) {
-            // TODO _currentInstance.Defaults.EndpointType??
-            // jsPlumb.Endpoint是一个Endpoint构造方法，见源码line 7393
-            var endpointFunc = _currentInstance.Defaults.EndpointType || jsPlumb.Endpoint;
-            var _p = jsPlumb.extend({}, params);
-            _p._jsPlumb = _currentInstance;
-            _p.newConnection = _newConnection;
-            _p.newEndpoint = _newEndpoint;
-            _p.endpointsByUUID = endpointsByUUID;
-            _p.endpointsByElement = endpointsByElement;
-            _p.fireDetachEvent = fireDetachEvent;
-            _p.elementId = id || _getId(_p.source);
-            var ep = new endpointFunc(_p);
-            // 生成唯一id
-            ep.id = "ep_" + _idstamp();
-            //
-            _manage(_p.elementId, _p.source);
-            if (!jsPlumb.headless) {
-
+    // 使全局jsPlumb构造方法继承这些方法
+    _ju.extend(root.jsPlumbInstance, _ju.EventGenerator, {
+        extend: function (o1, o2, names) {
+            var i;
+            if (names) {
+                for (i = 0; i < names.length; i++) {
+                    o1[names[i]] = o2[names[i]];
+                }
+            }
+            else {
+                for (i in o2) {
+                    o1[i] = o2[i];
+                }
             }
 
-            return ep;
-        }
-    };
+            return o1;
+        },
+    });
 
     jsPlumbInstance.prototype.Defaults = {
         Anchor: "Bottom",
@@ -340,7 +391,7 @@
 
     // create static instance and assign to window if window exists.
     var jsPlumb = new jsPlumbInstance();
-    // 将一个jsPlumb绑定到全局，root即window
+    // 将一个jsPlumb实例绑定到全局，root即window
     root.jsPlumb = jsPlumb;
     jsPlumb.getInstance = function (_defaults, overrideFns) {
         var j = new jsPlumbInstance(_defaults);
@@ -353,7 +404,7 @@
         return j;
     };
     /**
-     * 遍历DOM对象
+     * 工具方法：遍历DOM对象
      * @param spec {String | Array | Object}
      * @param fn {Function} callback
      */

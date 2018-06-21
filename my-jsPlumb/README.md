@@ -1,3 +1,5 @@
+## 组成
+
 ## jsPlumbUtil
 jsPlumbUtil是官方文档没有写的，在源码中看到的
 

@@ -1,3 +1,7 @@
+// jsPlumb.bind('ready', function () {
+//   // do something
+// });
+//  jsPlumb.ready是jsPlumb.bind ready 的一个语法糖
 jsPlumb.ready(() => {
     class DragFlow {
         constructor() {
@@ -107,7 +111,7 @@ jsPlumb.ready(() => {
 
             instance.batch(function () {
                 console.log('batch');
-                //拖动
+                // 拖动功能
                 instance.draggable(jsPlumb.getSelector(".flowchart-demo .window"), {grid: [20, 20]});
             });
 
@@ -120,9 +124,8 @@ jsPlumb.ready(() => {
                 console.log("connection " + connection.id + " was dragged");
             });
 
-            //删除连接事件
+            // 点击连线事件
             instance.bind("click", function (conn, originalEvent) {
-                console.log('delete fire');
                 if (confirm("Delete connection from " + conn.sourceId + " to " + conn.targetId + "?")) {
                     // 官网文档太不靠谱了！！！！，这是源码暴露的方法，
                     // 官网文档那个detach不能用！！！！源码都没有暴露这个方法好吗！！！！
