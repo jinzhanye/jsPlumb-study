@@ -1,3 +1,4 @@
+/* This file contains utility functions that run in both browsers and headless.*/
 ;(function () {
 
     var _isa = function (a) {
@@ -24,7 +25,7 @@
         _isf = function (o) {
             return Object.prototype.toString.call(o) === "[object Function]";
         },
-        _isNamedFunction = function(o) {
+        _isNamedFunction = function (o) {
             return _isf(o) && o.name != null && o.name.length > 0;
         },
         _ise = function (o) {
@@ -74,7 +75,7 @@
         //
         extend: function (child, parent, _protoFn) {
             var i;
-            parent = _isa(parent) ? parent : [ parent ];
+            parent = _isa(parent) ? parent : [parent];
 
             for (i = 0; i < parent.length; i++) {
                 for (var j in parent[i].prototype) {
@@ -118,16 +119,17 @@
     };
 
     root.jsPlumbUtil.EventGenerator = function () {
-        // _listeners 是jsPlumb相关事件容器
-        // _listeners = {
-        //     'eventName':[eventHandlers]
-        // }
+        // 以下声明的是属性用闭包进行私有化，每个jsPlumb实例都有一份
         var _listeners = {},
+            // _listeners 是jsPlumb相关事件容器，结构如下
+            // _listeners = {
+            //     'eventName':[eventHandlers]
+            // }
             eventsSuspended = false,
             // tick用于标识递归调用
             tick = false,
-            // this is a list of events that should re-throw any errors that occur during their dispatch. it is current private.
-            eventsToDieOn = { "ready": true },
+            // 不捕获eventsToDieOn列表里为true的事件相应的事件处理器抛出的错误，使之能够冒泡。而列表外的事件则捕获异常，输出日志
+            eventsToDieOn = {"ready": true},
             // 延迟队列
             queue = [];
 
@@ -139,7 +141,7 @@
          * @returns {jsPlumbInstance}
          */
         this.bind = function (event, listener, insertAtStart) {
-            var _one = function(evt) {
+            var _one = function (evt) {
                 root.jsPlumbUtil.addToList(_listeners, evt, listener, insertAtStart);
                 listener.__jsPlumb = listener.__jsPlumb || {};
                 listener.__jsPlumb[root.jsPlumbUtil.uuid()] = evt;
@@ -159,9 +161,9 @@
 
         /**
          * 触发事件
-         * @param event
+         * @param event {String} 事件名称
          * @param value
-         * @param originalEvent
+         * @param originalEvent {Object} 原生事件对象
          * @returns {root.jsPlumbUtil.EventGenerator}
          */
         this.fire = function (event, value, originalEvent) {
@@ -173,7 +175,7 @@
                         while (!_gone && i < l && ret !== false) {
                             // doing it this way rather than catching and then possibly re-throwing means that an error propagated by this
                             // method will have the whole call stack available in the debugger.
-                            // 不捕获eventsToDieOn列表里的事件处理器抛出的错误，使之能够冒泡。而列表外的事件则捕获异常，输出日志
+                            // 不捕获eventsToDieOn列表里为true的事件相应的事件处理器抛出的错误，使之能够冒泡。而列表外的事件则捕获异常，输出日志
                             if (eventsToDieOn[event]) {
                                 _listeners[event][i].apply(this, [value, originalEvent]);
                             }
@@ -203,7 +205,7 @@
             return this;
         };
 
-        var _drain = function() {
+        var _drain = function () {
             var n = queue.pop();
             if (n) {
                 this.fire.apply(this, n);
@@ -243,7 +245,7 @@
         this.isSuspendEvents = function () {
             return eventsSuspended;
         };
-        this.silently = function(fn) {
+        this.silently = function (fn) {
             this.setSuspendEvents(true);
             try {
                 fn();

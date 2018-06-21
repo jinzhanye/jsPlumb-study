@@ -1,3 +1,4 @@
+/*类似jQuery的DOM操作方法*/
 ;(function () {
 
     var root = this, _ju = root.jsPlumbUtil;

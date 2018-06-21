@@ -1,3 +1,5 @@
+/* This file contains the 'vanilla' adapter - having no external dependencies other than bundled libs. */
+// 'vanilla' adapter  ???
 ;(function () {
 
     "use strict";

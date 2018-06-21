@@ -1,3 +1,4 @@
+/* This file contains the SVG renderers. */
 ;(function () {
     "use strict";
     var root = this, _jp = root.jsPlumb, _ju = root.jsPlumbUtil;

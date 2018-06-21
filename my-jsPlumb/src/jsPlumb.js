@@ -1,3 +1,4 @@
+/*jsPlumb核心代码*/
 ;(function () {
 
     "use strict";
@@ -10,15 +11,15 @@
 
     var jsPlumbInstance = root.jsPlumbInstance = function (_defaults) {
         this.version = "2.6.9";
-        // 将开发者传入的参数覆盖到Defaults
         if (_defaults) {
+            // 属性拷贝
             jsPlumb.extend(this.Defaults, _defaults);
         }
 
         this.logEnabled = this.Defaults.LogEnabled;
         this._connectionTypes = {};
         this._endpointTypes = {};
-        // 继承事件处理类
+        // 借用EventGenerator构造方法，继承事件处理方法
         _ju.EventGenerator.apply(this);
         var _currentInstance = this,
             _bb = _currentInstance.bind,
@@ -31,7 +32,9 @@
         };
 
         var _container, _containerDelegations = [];
+        this.unbindContainer = function () {
 
+        };
         /**
          *
          * @param c {String | Object} selector or jQueryObject
@@ -43,7 +46,7 @@
             // 获取原生DOM对象
             c = this.getELement(c);
             // move existing connections and endpoints, if any.
-            // TODO
+            // TODO 以下两个方法的作用是??
             // this.select().each(function (conn) {
             //     conn.moveParent(c);
             // });
@@ -61,17 +64,40 @@
             };
 
             var _oneDelegateHandler = function (id, e, componentType) {
+                // e.srcElement是e.target的一个别名，只在老版本IE有效
+                var t = e.srcElement || e.target;
+                // 依次从 父节点 -> 当前节点 -> 祖父节点 搜索__jsPlumb对象
+                var jp = (t && t.parentNode ? t.parentNode.__jsPlumb : null) ||// 父节点
+                    (t ? t.__jsPlumb : null) ||// 当前节点
+                    (t && t.parentNode && t.parentNode.parentNode ? t.parentNode.parentNode._jsPlumb : null);// 祖父节点
 
+                if (jp) {
+                    jp.fire(id, jp, e);
+                    // TODO
+                    // jsplumb also fires every event coming from components/overlays. That's what the test for `jp.component` is for.
+                    // var alias
+                }
             };
 
+            /**
+             * 添加事件代理
+             * @param eventId 事件名称
+             * @param selector 代理节点的selector
+             * @param fn 回调方法
+             * @private
+             */
             var _addOneDelegate = function (eventId, selector, fn) {
-
+                _containerDelegations.push([eventId, fn]);
+                // 监听_container上的eventId事件，selector作代理节点
+                _currentInstance.on(_container, eventId, selector, fn);
             };
 
             var _oneDelegate = function (id) {
-
+                _addOneDelegate(id, '.jtk-endpoint', function (e) {
+                    _oneDelegateHandler(id, e, 'endpoint');
+                });
             };
-
+            // 将events列表的事件都代理到当前container上
             for (var i = 0; i < events.length; i++) {
                 _oneDelegate(events[i]);
             }
@@ -340,7 +366,7 @@
         this.getId = _getId;
     };
 
-    // 使全局jsPlumb构造方法继承这些方法
+    // 使全局jsPlumb构造方法继承_ju.EventGenerator.prototype上的方法与extend等方法
     _ju.extend(root.jsPlumbInstance, _ju.EventGenerator, {
         extend: function (o1, o2, names) {
             var i;
@@ -359,6 +385,7 @@
         },
     });
 
+    // jsPlumb实例继承这些默认配置
     jsPlumbInstance.prototype.Defaults = {
         Anchor: "Bottom",
         Anchors: [null, null],
@@ -378,7 +405,7 @@
         EndpointHoverStyles: [null, null],
         HoverPaintStyle: null,
         LabelStyle: {color: "black"},
-        LogEnabled: false,
+        LogEnabled: false, // jsPlumb内部有log机制，默认不输出log
         Overlays: [],
         MaxConnections: 1,
         PaintStyle: {"stroke-width": 4, stroke: "#456"},

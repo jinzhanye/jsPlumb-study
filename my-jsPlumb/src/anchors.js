@@ -1,3 +1,4 @@
+/* 创建及操作anchor相关代码 */
 ;(function () {
 
     "use strict";

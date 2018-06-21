@@ -1,3 +1,4 @@
+/* This file contains the default Connectors, Endpoint and Overlay definitions. */
 ;(function () {
 
     "use strict";

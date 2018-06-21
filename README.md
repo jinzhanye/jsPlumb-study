@@ -1,5 +1,8 @@
 # jsPlumb入门
 
+## 引入 
+官方推荐引入jsplumbtoolkit-defaults.css
+
 ## 加载
 ````
 jsPlumb.ready(() => {
