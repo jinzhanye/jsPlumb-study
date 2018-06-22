@@ -48,6 +48,93 @@
         isFunction: _isf,
         isEmpty: _ise,
         isNumber: _isnum,
+        clone: function (a) {
+            if (_iss(a)) {
+                return "" + a;
+            }
+            else if (_isb(a)) {
+                return !!a;
+            }
+            else if (_isd(a)) {
+                return new Date(a.getTime());
+            }
+            else if (_isf(a)) {
+                return a;
+            }
+            else if (_isa(a)) {
+                var b = [];
+                for (var i = 0; i < a.length; i++) {
+                    b.push(this.clone(a[i]));
+                }
+                return b;
+            }
+            else if (_iso(a)) {
+                var c = {};
+                for (var j in a) {
+                    c[j] = this.clone(a[j]);
+                }
+                return c;
+            }
+            else {
+                return a;
+            }
+        },
+        /**
+         * 属性从b合并到a，collations为可选参数，作用未知
+         * @param a { Object } merge into
+         * @param b {Object} merge from
+         * @param collations
+         * @returns {*}
+         */
+        merge: function (a, b, collations) {
+            // first change the collations array - if present - into a lookup table, because its faster.
+            var cMap = {}, ar, i;
+            collations = collations || [];
+            for (i = 0; i < collations.length; i++) {
+                cMap[collations[i]] = true;
+            }
+
+            var c = this.clone(a);
+            for (i in b) {
+                if (c[i] == null) {
+                    c[i] = b[i];
+                }
+                else if (_iss(b[i]) || _isb(b[i])) {
+                    if (!cMap[i]) {
+                        c[i] = b[i]; // if we dont want to collate, just copy it in.
+                    }
+                    else {
+                        ar = [];
+                        // if c's object is also an array we can keep its values.
+                        ar.push.apply(ar, _isa(c[i]) ? c[i] : [ c[i] ]);
+                        ar.push.apply(ar, _isa(b[i]) ? b[i] : [ b[i] ]);
+                        c[i] = ar;
+                    }
+                }
+                else {
+                    if (_isa(b[i])) {
+                        ar = [];
+                        // if c's object is also an array we can keep its values.
+                        if (_isa(c[i])) {
+                            ar.push.apply(ar, c[i]);
+                        }
+                        ar.push.apply(ar, b[i]);
+                        c[i] = ar;
+                    }
+                    else if (_iso(b[i])) {
+                        // overwite c's value with an object if it is not already one.
+                        if (!_iso(c[i])) {
+                            c[i] = {};
+                        }
+                        for (var j in b[i]) {
+                            c[i][j] = b[i][j];
+                        }
+                    }
+                }
+
+            }
+            return c;
+        },
         /**
          * 将[value]与map[key]映射
          * @param map

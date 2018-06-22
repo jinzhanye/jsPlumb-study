@@ -4355,7 +4355,6 @@
                 // ensure element is managed.
                 var myOffset = _manage(id, p.source).info.o;
                 _ju.addToList(endpointsByElement, id, e);
-
                 if (!_suspendDrawing) {
                     e.paint({
                         anchorLoc: e.anchor.compute({ xy: [ myOffset.left, myOffset.top ], wh: sizes[id], element: e, timestamp: _suspendedAt }),
@@ -7397,7 +7396,6 @@
         this.idPrefix = "_jsplumb_e_";
         this.defaultLabelLocation = [ 0.5, 0.5 ];
         this.defaultOverlayKeys = ["Overlays", "EndpointOverlays"];
-        debugger
         _jp.OverlayCapableJsPlumbUIComponent.apply(this, arguments);
 
 // TYPE
@@ -7504,6 +7502,7 @@
 
         this.prepareEndpoint = function(ep, typeId) {
             var _e = function (t, p) {
+                debugger
                 var rm = _jsPlumb.getRenderMode();
                 if (_jp.Endpoints[rm][t]) {
                     return new _jp.Endpoints[rm][t](p);

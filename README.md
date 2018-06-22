@@ -40,9 +40,10 @@ jsPlumbInstance.addEndpoint(selectorId, endPoint, {anchor: position, uuid: UUID}
 
 ### anchor
 
-BottomLeft 表示为 [0,1,0,1] 
+BottomLeft 表示为 [0,1,0,1,x,x] 
 
 第一个[0,1]表示坐标，第二个[0,1]表示方向由[0,0]到[0,1]，即方向向下
+最后两个x表示offset，待研究
 
 ````            
                     -1

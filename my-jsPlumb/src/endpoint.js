@@ -27,13 +27,84 @@
             return a;
         };
 
+        // TODO setPreparedAnchor
         this.setPreparedAnchor = function (anchor, doNotRepaint) {
+            // this._jsPlumb.instance.continuousAnchorFactory.clear(this.elementId);
+            this.anchor = anchor;
 
+            // _updateAnchorClass();
+
+            // if (!doNotRepaint) {
+            //     this._jsPlumb.instance.repaint(this.elementId);
+            // }
+
+            return this;
         };
 
         // TODO
         this.prepareEndpoint = function (ep, typeId) {
+            /**
+             *
+             * @param t
+             * @param p {Object} params,endpoint参数
+             * @private
+             */
+            var _e = function (t, p) {
+                // renderMode为"svg"
+                var rm = _jsPlumb.getRenderMode();
+                // 见源码 line 14111 附近
+                // Endpoints.svg.Dot
+                // Endpoints.svg.Rectangle
+                // Endpoints.svg.Image
+                // Endpoints.svg.Label
+                // Endpoints.svg.Custom
+                if (_jp.Endpoints[rm][t]) {
+                    return new _jp.Endpoints[rm][t](p);
+                }
+                if (!_jsPlumb.Defaults.DoNotThrowErrors) {
+                    throw {msg: "jsPlumb: unknown endpoint type '" + t + "'"};
+                }
+            };
+
+            var endpointArgs = {
+                _jsPlumb: this._jsPlumb.instance,
+                cssClass: params.cssClass,
+                container: params.container,
+                tooltip: params.tooltip, // ??
+                connectorTooltip: params.connectorTooltip, // ??
+                endpoint: this
+            };
+
             var endpoint;
+
+            if (_ju.isString(ep)) {
+                endpoint = _e(ep, endpointArgs);
+            }
+            else if (_ju.isArray(ep)) {
+                endpointArgs = _ju.merge(ep[1], endpointArgs);
+                endpoint = _e(ep[0], endpointArgs);
+            }
+            else {
+                endpoint = ep.clone();
+            }
+
+            // assign a clone function using a copy of endpointArgs. this is used when a drag starts: the endpoint that was dragged is cloned,
+            // and the clone is left in its place while the original one goes off on a magical journey.
+            // the copy is to get around a closure problem, in which endpointArgs ends up getting shared by
+            // the whole world.
+            //var argsForClone = jsPlumb.extend({}, endpointArgs);
+            endpoint.clone = function () {
+                // TODO this, and the code above, can be refactored to be more dry.
+                if (_ju.isString(ep)) {
+                    return _e(ep, endpointArgs);
+                }
+                else if (_ju.isArray(ep)) {
+                    endpointArgs = _ju.merge(ep[1], endpointArgs);
+                    return _e(ep[0], endpointArgs);
+                }
+            }.bind(this);
+
+            endpoint.typeId = typeId;
             return endpoint;
         };
 
@@ -53,8 +124,16 @@
             this.canvas = this.endpoint.canvas;
         };
 
+        /**
+         *  为当前endpoint绑定anchor
+         * @param anchorParams
+         * @param doNotRepaint
+         * @returns {root.jsPlumb.Endpoint}
+         */
         this.setAnchor = function (anchorParams, doNotRepaint) {
+            // 构造一个或多个anchor
             var a = this.prepareAnchor(anchorParams);
+            // 将anchor绑定到endpoint
             this.setPreparedAnchor(a, doNotRepaint);
             return this;
         };
@@ -74,18 +153,24 @@
         this.repaint = this.paint;
         // TODO Drag ....
 
-        //
+        // ep默认为"DOT"
         var ep = params.endpoint || this._jsPlumb.instance.Defaults.Endpoint || _jp.Defaults.Endpoint;
         // 先对ep进行一些处理，然后绑定this.endpoint = ep
         this.setEndpoint(ep, true);
         // _jsPlumb.Defaults.Anchor 的值是 "Bottom" 见line 6348
         var anchorParamsToUse = params.anchor ? params.anchor : params.anchors ? params.anchors : (_jsPlumb.Defaults.Anchor || "Top");
         this.setAnchor(anchorParamsToUse, true);
+
+        // TODO finally, set type if it was provided
+        // var type = [ "default", (params.type || "")].join(" ");
+        // this.addType(type, params.data, true);
+        this.canvas = this.endpoint.canvas;
+        this.canvas._jsPlumb = this;
     };
 
     // 继承OverlayCapableJsPlumbUIComponent共享属性
     _ju.extend(_jp.Endpoint, _jp.OverlayCapableJsPlumbUIComponent, {
-
+        // 以下方法均未阅读
         setVisible: function (v, doNotChangeConnections, doNotNotifyOtherEndpoint) {
             this._jsPlumb.visible = v;
             if (this.canvas) {

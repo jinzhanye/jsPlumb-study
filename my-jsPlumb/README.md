@@ -35,6 +35,9 @@ Anchor --line 10015--> EventGenerator
 jsPlumbInstance持有jsPlumbUIComponent
 this.jsPlumbUIComponent = jsPlumbUIComponent;
 
+default.js
+Endpoints.Dot ----> Endpoints.AbstractEndpoint ---->  AbstractComponent
+
 ````js
 var anchorParams = {
     x: specimen[0], y: specimen[1],
@@ -67,3 +70,14 @@ on -> fire -> bind
 ##
 __jsPlumb
 Anchor 是jsPlumb的一等公民！
+
+line 10896  全局属性 Infinity 是一个数值，表示无穷大。
+https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Infinity
+````js
+    var AbstractComponent = function () {
+        this.resetBounds = function () {
+            this.bounds = { minX: Infinity, minY: Infinity, maxX: -Infinity, maxY: -Infinity };
+        };
+        this.resetBounds();
+    };
+````

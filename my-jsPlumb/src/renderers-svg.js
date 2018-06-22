@@ -39,6 +39,31 @@
     var SvgComponent = function (params) {
         var pointerEventsSpec = params.pointerEventsSpec || "all", renderer = {};
 
+        _jp.jsPlumbUIComponent.apply(this, params.originalArgs);
+        this.canvas = null;
+        this.path = null;
+        this.svg = null;
+        this.bgCanvas = null;
+
+        var clazz = params.cssClass + " " + (params.originalArgs[0].cssClass || ""),
+            svgParams = {
+                "style": "",
+                "width": 0,
+                "height": 0,
+                "pointer-events": pointerEventsSpec,
+                "position": "absolute"
+            };
+
+        if (params.useDivWrapper) {
+            // 创建一个div元素,该div就是endpoint的容器
+            this.canvas = _jp.createElement("div", {position: "absolute"});
+            // 设置这个div定位top:0,left:0  width:1,height:1
+            _ju.sizeElement(this.canvas, 0, 0, 1, 1);
+            this.canvas.class = clazz;
+        } else {
+            // TODO
+        }
+
         this.paint = function (style, anchor, extents) {
             if (style != null) {
                 var xy = [this.x, this.y], wh = [this.w, this.h], p;
@@ -91,8 +116,8 @@
     * SVG Dot Endpoint
     */
     _jp.Endpoints.svg.Dot = function () {
-        // TODO
-        // _jp.Endpoints.Dot.apply(this, arguments);
+        _jp.Endpoints.Dot.apply(this, arguments);
+        // 给endpoint绑定canvas
         SvgEndpoint.apply(this, arguments);
         this.makeNode = function (style) {
             return _node("circle", {
@@ -100,7 +125,7 @@
                 "cy": this.h / 2,
                 "r": this.radius
             });
-        }
+        };
     };
     _ju.extend(_jp.Endpoints.svg.Dot, [_jp.Endpoints.Dot, SvgEndpoint]);
 
