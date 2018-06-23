@@ -138,9 +138,64 @@
             return this;
         };
 
+        /**
+         *
+         * params.anchorLoc Array(2)
+         * params.timestamp
+         * @param params {Object}
+         */
         this.paint = function (params) {
             params = params || {};
-            // var timestamp = params.timestamp,
+            // 只要params.recalc没有明确是false，都需要重新计算
+            var timestamp = params.timestamp, recalc = !(params.recalc === false);
+            if (!timestamp || this.timestamp !== timestamp) {
+                var info = _jsPlumb.updateOffset({elId: this.elementId, timestamp: timestamp});
+                // info.o = = {
+                //     height: 62,
+                //     width: 62,
+                //     bottom: 393,
+                //     left: 317,
+                //     right: 379,
+                //     top: 331,
+                //     centerx: 348, el的几何中心x坐标
+                //     centery: 362, el的几何中心y坐标
+                // };
+                // info.s = [62,62] 重复上面width与height的值 即 size
+                var xy = params.offsets ? params.offsets.o : info.o;
+                if (xy != null) {
+                    var ap = params.anchorPoint, connectorPaintStyle = params.connectorPaintStyle;
+                    if (ap == null) {
+                        var wh = params.dimensions || info.s,
+                            anchorParams = {
+                                xy: [xy.left, xy.top],
+                                wh: wh,
+                                element: this,
+                                timestamp: timestamp
+                            };
+                        // TODO
+                        if (true) {
+                        } else if (true) {
+
+                        }
+                        // 计算anchor的坐标 ap = [left,top]
+                        ap = this.anchor.compute(anchorParams);
+                    }
+                }
+                // this.endpoint.compute为endpoint注入以下属性，line 11350
+                // endpoint.x = out[0];
+                // endpoint.y = out[1];
+                // endpoint.w = out[2];
+                // endpoint.h = out[3];
+                // endpoint.bounds.minX = this.x;
+                // endpoint.bounds.minY = this.y;
+                // endpoint.bounds.maxX = this.x + this.w;
+                // endpoint.bounds.maxY = this.y + this.h;
+
+                // anchor默认orientation为 [0,1] 即 向下
+                // paintStyleInUse 默认为 {fill:"#456"}
+                this.endpoint.compute(ap, this.anchor.getOrientation(this), this._jsPlumb.paintStyleInUse, connectorPaintStyle || this.paintStyleInUse);
+                this.endpoint.paint(this._jsPlumb.paintStyleInUse, this.anchor);
+            }
         };
 
         this.getTypeDescriptor = function () {

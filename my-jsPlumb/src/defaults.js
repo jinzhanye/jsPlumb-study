@@ -47,9 +47,16 @@
         this.type = "Dot";
         var _super = _jp.Endpoints.AbstractEndpoint.apply(this, arguments);
         params = params || {};
+        this.radius = params.radius || 10; // 默认半径为10
 
         this._compute = function (anchorPoint, orientation, endpointStyle, connectorPaintStyle) {
+            this.radius = endpointStyle.radius || this.radius;// 上面提到的默认半径为10
+            var x = anchorPoint[0] - this.radius,
+                y = anchorPoint[1] - this.radius,
+                w = this.radius * 2,// 10 * 2 = 20
+                h = this.radius * 2;
 
+            return [x, y, w, h, this.radius];
         };
     };
 

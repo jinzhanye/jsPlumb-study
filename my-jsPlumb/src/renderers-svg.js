@@ -29,11 +29,16 @@
                 node.setAttribute(i, "" + attributes[i]);
             }
         },
+        // 创建svg元素，例如 圆
         _node = function (name, attributes) {
             attributes = attributes || {};
             attributes.version = "1.1";
             attributes.xmlns = ns.svg;
             return _jp.createElementNS(ns.svg, name, null, null, attributes);
+        },
+        // left:d[0] , top:d[1]
+        _pos = function (d) {
+            return "position:absolute;left:" + d[0] + "px;top:" + d[1] + "px";
         };
 
     var SvgComponent = function (params) {
@@ -64,19 +69,51 @@
             // TODO
         }
 
+        // params.originalArgs[0].parent ??
+        // 将div容器添加到container容器
+        params._jsPlumb.appendElement(this.canvas, params.originalArgs[0].parent);
+        if (params.useDivWrapper) {
+            // 将svg元素添加到div容器
+            this.canvas.appendChild(this.svg);
+        }
+
+        var displayElements = [this.canvas];
+        this.getDisplayElements = function () {
+            return displayElements;
+        };
+
+        this.appendDisplayElement = function (el) {
+            displayElements.push(el);
+        };
+
         this.paint = function (style, anchor, extents) {
             if (style != null) {
+                // p表示position
+                // x即left,y即top
                 var xy = [this.x, this.y], wh = [this.w, this.h], p;
-                if (params.useDivWrapper) {
-
-                } else {
-
+                // TODO
+                if (extents != null) {
                 }
 
+                if (params.useDivWrapper) {
+                    // 定位div容器
+                    _ju.sizeElement(this.canvas, xy[0], xy[1], wh[0], wh[1]);
+                    // 还原定位？？
+                    xy[0] = 0;
+                    xy[1] = 0;
+                    // p 为 position:absolute;left:0px;top:0px;
+                    p = _pos([0, 0]);
+                } else {
+                    p = _pos([xy[0], xy[1]]);
+                }
+
+                // 将circle元素追加到svg元素内
                 renderer.paint.apply(this, arguments);
 
+                // 给svg元素设置宽高，使之可见
+                // svg在一个div容器内，svg内有一个circle元素
                 _attr(this.svg, {
-                    "style": p,
+                    "style": p, // position:absolute;left:0px;top:0px
                     "width": wh[0] || 0,
                     "height": wh[1] || 0,
                 });
@@ -94,9 +131,15 @@
      * Base class for SVG endpoints.
      */
     var SvgEndpoint = _jp.SvgEndpoint = function (params) {
-        var _super = SvgComponent.apply(this, [{
-            _jsPlumb: params._jsPlumb
-        }]);
+        var _super = SvgComponent.apply(this, [
+            {
+                cssClass: params._jsPlumb.endpointClass,
+                originalArgs: arguments,
+                pointerEventsSpec: "all", // ??
+                useDivWrapper:true, // 这个属性非常重要！
+                _jsPlumb: params._jsPlumb,
+            }
+        ]);
 
         _super.renderer.paint = function (style) {
             var s = _jp.extend({}, style);

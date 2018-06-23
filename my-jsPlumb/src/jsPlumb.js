@@ -237,6 +237,26 @@
             _idstamp = function () {
                 return "" + _curIdStamp++;
             },
+            /**
+             * appends an element to some other element, which is calculated as follows:
+             * 1. if Container exists, use that element.
+             * 2. if the 'parent' parameter exists, use that.
+             * 3. otherwise just use the root element.
+             * @param el {Object} 原生DOM对象
+             * @param parent 未知
+             * @private
+             */
+            _appendElement = function (el, parent) {
+                if (_container) {
+                    _container.appendChild(el);
+                }
+                else if (!parent) {
+                    this.appendToRoot(el);
+                }
+                else {
+                    this.getElement(parent).appendChild(el);
+                }
+            }.bind(this),
 
             /*
              factory method to prepare a new endpoint.  this should always be used instead of creating Endpoints
@@ -476,13 +496,28 @@
                 _ensureContainer(p.source);
                 var id = _getId(p.source);
                 var e = _newEndpoint(p, id);
-
+                // _manage 做了两件事
+                // 1.将el放到全局元素容器，以id作为key， managedElements[id] = el
+                // 2.计算el相对于container的位置
+                // myOffset = {
+                //     height: 62,
+                //     width: 62,
+                //     bottom: 393,
+                //     left: 317,
+                //     right: 379,
+                //     top: 331,
+                //     centerx: 348, el的几何中心x坐标
+                //     centery: 362, el的几何中心y坐标
+                // };
                 var myOffset = _manage(id, p.source).info.o;
+                // endpointsByElement为全局endpoint容器
                 // endpointsByElement[id] = [e]
                 _ju.addToList(endpointsByElement, id, e);
 
                 if (!_suspendDrawing) {
                     e.paint({
+                        // e.anchor.compute 计算anchor的坐标
+                        // anchorLoc = [left,top]
                         anchorLoc: e.anchor.compute({
                             xy: [myOffset.left, myOffset.top],
                             wh: sizes[id],
@@ -504,6 +539,8 @@
 
         };
         this.getId = _getId;
+
+        this.appendElement = _appendElement;
     };
 
     // 使全局jsPlumb构造方法继承_ju.EventGenerator.prototype上的方法与extend等方法
@@ -527,6 +564,7 @@
 
     // jsPlumb实例继承这些默认配置
     jsPlumbInstance.prototype.Defaults = {
+        // Bottom即BottomCenter的位置
         Anchor: "Bottom",
         Anchors: [null, null],
         ConnectionsDetachable: true,
@@ -536,18 +574,22 @@
         DoNotThrowErrors: false,
         DragOptions: {},
         DropOptions: {},
+        // Dot 圆点
         Endpoint: "Dot",
         EndpointOverlays: [],
         Endpoints: [null, null],
+        // endpoint填充为墨绿色
         EndpointStyle: {fill: "#456"},
         EndpointStyles: [null, null],
         EndpointHoverStyle: null,
         EndpointHoverStyles: [null, null],
         HoverPaintStyle: null,
         LabelStyle: {color: "black"},
-        LogEnabled: false, // jsPlumb内部有log机制，默认不输出log
+        // jsPlumb内部有log机制，默认不输出log
+        LogEnabled: false,
         Overlays: [],
         MaxConnections: 1,
+        // stroke-width 控制边缘宽度，stroke 控制边缘颜色
         PaintStyle: {"stroke-width": 4, stroke: "#456"},
         ReattachConnections: false,
         RenderMode: "svg",

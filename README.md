@@ -40,10 +40,16 @@ jsPlumbInstance.addEndpoint(selectorId, endPoint, {anchor: position, uuid: UUID}
 
 ### anchor
 
-BottomLeft 表示为 [0,1,0,1,x,x] 
+BottomLeft 表示为 [0,1,0,1,n,n] 
 
 第一个[0,1]表示坐标，第二个[0,1]表示方向由[0,0]到[0,1]，即方向向下
-最后两个x表示offset，待研究
+
+最后两个参数分别表示x与y的偏移量，下面代码offsets[0]与offsets[1]，就是表示这两个值
+
+line 10196
+````js
+this.lastReturnValue = [xy[0] + (this.x * wh[0]) + this.offsets[0], xy[1] + (this.y * wh[1]) + this.offsets[1]];
+````
 
 ````            
                     -1
@@ -51,13 +57,15 @@ BottomLeft 表示为 [0,1,0,1,x,x]
                     |
                     |
                     |
- -1 ----------------0-------------------> 1 
+ -1 ----------------0-------------------> 1  x-axis
                     |
                     |
                     |
                    \|/
-                     1
+                     1 y-axis
+                     
 ````
+
 
 内置静态anchor总共有9个
 
