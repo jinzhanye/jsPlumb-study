@@ -48,7 +48,18 @@
         var _super = _jp.Endpoints.AbstractEndpoint.apply(this, arguments);
         params = params || {};
         this.radius = params.radius || 10; // 默认半径为10
+        this.defaultOffset = 0.5 * this.radius;// ??
+        this.defaultInnerRadius = this.radius / 3;// ??
 
+        /**
+         *  计算endpoint的坐标及宽高
+         * @param anchorPoint
+         * @param orientation
+         * @param endpointStyle
+         * @param connectorPaintStyle
+         * @returns {*[]}
+         * @private
+         */
         this._compute = function (anchorPoint, orientation, endpointStyle, connectorPaintStyle) {
             this.radius = endpointStyle.radius || this.radius;// 上面提到的默认半径为10
             var x = anchorPoint[0] - this.radius,

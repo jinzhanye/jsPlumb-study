@@ -280,7 +280,7 @@
                 //
                 _manage(_p.elementId, _p.source);
                 if (!jsPlumb.headless) {
-                    // 记录当前endpoint与container的距离
+                    // 记录当前endpoint与document的距离
                     _currentInstance.getDragManager().endpointAdded(_p.source, id);
                 }
 
@@ -495,6 +495,7 @@
                 p.source = _currentInstance.getElement(inputs[i]);
                 _ensureContainer(p.source);
                 var id = _getId(p.source);
+                // 创建一个endpoint
                 var e = _newEndpoint(p, id);
                 // _manage 做了两件事
                 // 1.将el放到全局元素容器，以id作为key， managedElements[id] = el

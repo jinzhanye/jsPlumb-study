@@ -99,19 +99,18 @@ jsPlumb.ready(() => {
             const instance = this.jsPlumbInstance;
 
             instance.shouldFireEvent = function () {
-                console.log('*********shouldFireEvent*********');
-                console.log(arguments);
+                // console.log('*********shouldFireEvent*********');
+                // console.log(arguments);
                 // 如果绑定shouldFireEvent方法，则需要返回一个Boolean转型后不为false的值才会让事件触发
                 return true;
             };
 
             instance.bind('manageElement', function () {
-                console.log('*********manageElement*********');
+                console.log('********* manageElement *********');
                 console.log(arguments);
             });
 
             instance.batch(function () {
-                console.log('batch');
                 // 拖动功能
                 instance.draggable(jsPlumb.getSelector(".flowchart-demo .window"), {grid: [20, 20]});
             });
@@ -137,7 +136,7 @@ jsPlumb.ready(() => {
             instance.bind('connection', function (info) {
                 //当连接成功后，将箭头上的label改为连接ID
                 // info.connection.getOverlay("label").setLabel(info.connection.id);
-                console.log('connection');
+                console.log('********* connection *********');
             });
             instance.bind('connectionMoved', function (params) {
                 console.log(params.connection.id + '位置发生变化');
@@ -164,7 +163,6 @@ jsPlumb.ready(() => {
                             anchor,
                             uuid: UUID
                         });
-                        console.log('new a endpoint:', endpoint);
                         endpoint.bind('click', function (endpoint) {
                             console.log('you clicked on ', endpoint);
                         });
@@ -200,10 +198,7 @@ jsPlumb.ready(() => {
         }
 
         connect(uuids) {
-            //利用uuid连接
-            //editable??
-            this.jsPlumbInstance.connect({uuids: uuids, editable: true});
-            console.log(this.jsPlumbInstance);
+            this.jsPlumbInstance.connect({uuids, editable: true});
         }
     }
 

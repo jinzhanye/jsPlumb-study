@@ -4446,7 +4446,6 @@
 
 
         this.addEndpoint = function (el, params, referenceParams) {
-            debugger
             referenceParams = referenceParams || {};
             var p = jsPlumb.extend({}, referenceParams);
             jsPlumb.extend(p, params);

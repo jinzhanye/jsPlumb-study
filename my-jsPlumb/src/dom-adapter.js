@@ -90,7 +90,7 @@
             return e;
         },
         /**
-         * 如果开发者传入relativeToRoot，则返回元素相对于根节点的偏移量，传入container同理
+         * relativeToRoot、container???
          * 如果只传入el则不作计算简单地返回offsetLeft、offsetTop
          * @param el
          * @param relativeToRoot
