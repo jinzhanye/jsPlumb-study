@@ -36,7 +36,7 @@ jsPlumb.ready(() => {
                     stroke: "#333",
                 },
                 isTarget: true,
-                connector: ["Flowchart", {gap: 10, cornerRadius: 5}],
+                connector: ["Flowchart", { gap: 10, cornerRadius: 5 }],
             };
 
             this.jsPlumbInstance = null;
@@ -47,10 +47,6 @@ jsPlumb.ready(() => {
             // overlays 在  jsPlumb.connect, jsPlumb.addEndpoint or jsPlumb.makeSource 这几个方法下各有适用
             // 初始化时用 ConnectionOverlays
             this.jsPlumbInstance = jsPlumb.getInstance({
-                // DragOptions: {//设置拖拽元素参数
-                //     cursor: 'pointer',
-                //     zIndex: 2000
-                // },
                 ConnectionOverlays: [//附加到每条连线的CSS样式
 //             width，箭头尾部的宽度
 //             length，从箭头的尾部到头部的距离
@@ -110,10 +106,10 @@ jsPlumb.ready(() => {
                 console.log(arguments);
             });
 
-            instance.batch(function () {
-                // 拖动功能
-                instance.draggable(jsPlumb.getSelector(".flowchart-demo .window"), {grid: [20, 20]});
-            });
+            // instance.batch(function () {
+            // 拖动功能
+            // instance.draggable(jsPlumb.getSelector(".flowchart-demo .window"), { grid: [20, 20] });
+            // });
 
             instance.bind('connectionDrag', function (connection) {
                 console.log(connection.id + '被拖动中');
@@ -159,6 +155,7 @@ jsPlumb.ready(() => {
                         }
 
                         // el, params, referenceParams
+                        debugger;
                         let endpoint = self.jsPlumbInstance.addEndpoint(selectorId, endPointConfig, {
                             anchor,
                             uuid: UUID
@@ -183,8 +180,8 @@ jsPlumb.ready(() => {
                 // Center
 
                 // [ 0.5, 1, 0, 1, 0, 50 ] 在Bottom的基础上，向y轴下移50px
-                addEndPointForEach(['Top', 'Bottom'], self.sourceEndPoint, selectorId)();
-                addEndPointForEach(['Left', 'Right'], self.targetEndpoint, selectorId)();
+                addEndPointForEach(['Top'], self.sourceEndPoint, selectorId)();
+                // addEndPointForEach(['Left', 'Right'], self.targetEndpoint, selectorId)();
             }
 
 
@@ -198,15 +195,17 @@ jsPlumb.ready(() => {
         }
 
         connect(uuids) {
-            this.jsPlumbInstance.connect({uuids, editable: true});
+            debugger;
+            this.jsPlumbInstance.connect({ uuids, editable: true });
         }
     }
 
 
     (function main() {
         let dragFlowChart = new DragFlow();
-        dragFlowChart.addEndPoint(['flowchartWindow1', 'flowchartWindow2']);
-        dragFlowChart.addEndPoint('flowchartWindow3');
-        dragFlowChart.connect(['flowchartWindow3Bottom', 'flowchartWindow1Left']);
+        dragFlowChart.addEndPoint(['flowchartWindow1']);
+        // dragFlowChart.addEndPoint(['flowchartWindow1', 'flowchartWindow2']);
+        // dragFlowChart.addEndPoint('flowchartWindow3');
+        // dragFlowChart.connect(['flowchartWindow3Bottom', 'flowchartWindow1Left']);
     }());
 });

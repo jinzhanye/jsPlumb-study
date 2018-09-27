@@ -9238,7 +9238,7 @@
                         });
 
                     this.connector.resetBounds();
-
+                    debugger;
                     this.connector.compute({
                         sourcePos: sAnchorP,
                         targetPos: tAnchorP,
@@ -10799,6 +10799,7 @@
              notes on this method in AbstractSegment.
              */
             this.findClosestPointOnPath = function (x, y) {
+                debugger;
                 var out = {
                     d: Infinity,
                     x: null,

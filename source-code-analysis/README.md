@@ -30,16 +30,6 @@ jsPlumb.ready(()=> {
 });
 ```
 
-## 组成
-
-## jsPlumbUtil
-jsPlumbUtil是官方文档没有写的，在源码中看到的
-
-- uuid 生成id
-
-在事件触发前可绑定的钩子方法 jsPlumbInstance.shouldFireEvent
-
-
 ## 继承关系
 基本上所有的类都会继承EventGenerator
 
