@@ -96,14 +96,14 @@ jsPlumb.ready(() => {
 
             instance.shouldFireEvent = function () {
                 // console.log('*********shouldFireEvent*********');
-                // console.log(arguments);
+                console.log(arguments);
                 // 如果绑定shouldFireEvent方法，则需要返回一个Boolean转型后不为false的值才会让事件触发
                 return true;
             };
 
             instance.bind('manageElement', function () {
-                console.log('********* manageElement *********');
-                console.log(arguments);
+                // console.log('********* manageElement *********');
+                // console.log(arguments);
             });
 
             // instance.batch(function () {
@@ -112,12 +112,12 @@ jsPlumb.ready(() => {
             // });
 
             instance.bind('connectionDrag', function (connection) {
-                console.log(connection.id + '被拖动中');
+                // console.log(connection.id + '被拖动中');
             });
 
             //线条拖拽完毕事件，不管位置有没有发生变化
             instance.bind("connectionDragStop", function (connection) {
-                console.log("connection " + connection.id + " was dragged");
+                // console.log("connection " + connection.id + " was dragged");
             });
 
             // 点击连线事件
@@ -132,10 +132,10 @@ jsPlumb.ready(() => {
             instance.bind('connection', function (info) {
                 //当连接成功后，将箭头上的label改为连接ID
                 // info.connection.getOverlay("label").setLabel(info.connection.id);
-                console.log('********* connection *********');
+                // console.log('********* connection *********');
             });
             instance.bind('connectionMoved', function (params) {
-                console.log(params.connection.id + '位置发生变化');
+                // console.log(params.connection.id + '位置发生变化');
             });
 
             instance.fire('jsPlumbDemoNodeAdded', instance);
@@ -155,13 +155,12 @@ jsPlumb.ready(() => {
                         }
 
                         // el, params, referenceParams
-                        debugger;
                         let endpoint = self.jsPlumbInstance.addEndpoint(selectorId, endPointConfig, {
                             anchor,
                             uuid: UUID
                         });
                         endpoint.bind('click', function (endpoint) {
-                            console.log('you clicked on ', endpoint);
+                            // console.log('you clicked on ', endpoint);
                         });
                     });
                 }
@@ -180,8 +179,8 @@ jsPlumb.ready(() => {
                 // Center
 
                 // [ 0.5, 1, 0, 1, 0, 50 ] 在Bottom的基础上，向y轴下移50px
-                addEndPointForEach(['Top'], self.sourceEndPoint, selectorId)();
-                // addEndPointForEach(['Left', 'Right'], self.targetEndpoint, selectorId)();
+                addEndPointForEach(['Top', 'Bottom'], self.sourceEndPoint, selectorId)();
+                addEndPointForEach(['Left', 'Right'], self.targetEndpoint, selectorId)();
             }
 
 
@@ -195,7 +194,6 @@ jsPlumb.ready(() => {
         }
 
         connect(uuids) {
-            debugger;
             this.jsPlumbInstance.connect({ uuids, editable: true });
         }
     }
@@ -203,9 +201,8 @@ jsPlumb.ready(() => {
 
     (function main() {
         let dragFlowChart = new DragFlow();
-        dragFlowChart.addEndPoint(['flowchartWindow1']);
-        // dragFlowChart.addEndPoint(['flowchartWindow1', 'flowchartWindow2']);
-        // dragFlowChart.addEndPoint('flowchartWindow3');
-        // dragFlowChart.connect(['flowchartWindow3Bottom', 'flowchartWindow1Left']);
+        dragFlowChart.addEndPoint(['flowchartWindow1', 'flowchartWindow2']);
+        dragFlowChart.addEndPoint('flowchartWindow3');
+        dragFlowChart.connect(['flowchartWindow3Bottom', 'flowchartWindow1Left']);
     }());
 });

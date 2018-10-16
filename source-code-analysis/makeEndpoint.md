@@ -89,6 +89,7 @@ var _manage = _currentInstance.manage = function (id, element, _transient) {
     return managedElements[id];
 };
 ````
+
 `_updateOffset({ elId: id, timestamp: _suspendedAt })` 
 
 ````js
@@ -101,7 +102,6 @@ getOffset: function (el, relativeToRoot, container) {
         },
         op = (relativeToRoot || (container != null && (el !== container && el.offsetParent !== container))) ? el.offsetParent : null,
         _maybeAdjustScroll = function (offsetParent) {
-            // 减去多余的 scrollTop 与 scrollLeft
             if (offsetParent != null && offsetParent !== document.body && (offsetParent.scrollTop > 0 || offsetParent.scrollLeft > 0)) {
                 out.left -= offsetParent.scrollLeft;
                 out.top -= offsetParent.scrollTop;
@@ -111,6 +111,7 @@ getOffset: function (el, relativeToRoot, container) {
     while (op != null) {
         out.left += op.offsetLeft;
         out.top += op.offsetTop;
+        // 减去多余的 scrollTop 与 scrollLeft
         _maybeAdjustScroll(op);
         op = relativeToRoot ? op.offsetParent :
             op.offsetParent === container ? null : op.offsetParent;
@@ -126,29 +127,125 @@ getOffset: function (el, relativeToRoot, container) {
         }
     }
     return out;
-},
+}
 ````
 
-
-
-- compute 计算 endpoint 的位置(绝对定位)
+利用 `offsetLeft、offsetTop` 计算出当前元素到 `offsetParent` 的偏移量 
 
 ````js
+offsets[elId].right = offsets[elId].left + sizes[elId][0];
+offsets[elId].bottom = offsets[elId].top + sizes[elId][1];
+offsets[elId].width = sizes[elId][0];
+offsets[elId].height = sizes[elId][1];
+offsets[elId].centerx = offsets[elId].left + (offsets[elId].width / 2);
+offsets[elId].centery = offsets[elId].top + (offsets[elId].height / 2);
+````
+
+计算当前元素到 `offsetParent` 各个方位的距离。及计算当前元素几何中心。
+
+````js
+myOffset = {
+    bottom: 552,
+    centerx: 103,
+    centery: 521,
+    height: 62,
+    left: 72,
+    right: 134,
+    top: 490,
+    width: 62,
+}
+
 e.paint({
     // 计算 anchor 位置
     anchorLoc: e.anchor.compute({ xy: [ myOffset.left, myOffset.top ], wh: sizes[id], element: e, timestamp: _suspendedAt }),
     timestamp: _suspendedAt
 });
-
-{
-    x:
-    y:
-    w:
-    h:
-}
-
 ````
 
-- createElement svgContainer、circle
-- appendChild in container
-- 设置宽高
+`anchor.compute` 利用 `anchor` 的参数及 `myOffset` 计算出 `anchor` 的 `x、y` 坐标
+
+````js
+this.compute = function (params) {
+    // ......
+    var xy = params.xy, wh = params.wh, timestamp = params.timestamp;
+    // ......
+    else {
+        this.lastReturnValue = [xy[0] + (this.x * wh[0]) + this.offsets[0], xy[1] + (this.y * wh[1]) + this.offsets[1]];
+    }
+    // ......
+    return this.lastReturnValue;
+};
+````
+
+
+````js
+this.paint = function (style, anchor, extents) {
+    if (style != null) {
+
+        var xy = [this.x, this.y], wh = [this.w, this.h], p;
+        if (extents != null) {
+            if (extents.xmin < 0) {
+                xy[0] += extents.xmin;
+            }
+            if (extents.ymin < 0) {
+                xy[1] += extents.ymin;
+            }
+            wh[0] = extents.xmax + ((extents.xmin < 0) ? -extents.xmin : 0);
+            wh[1] = extents.ymax + ((extents.ymin < 0) ? -extents.ymin : 0);
+        }
+
+        if (params.useDivWrapper) {
+            _ju.sizeElement(this.canvas, xy[0], xy[1], wh[0], wh[1]);
+            xy[0] = 0;
+            xy[1] = 0;
+            p = _pos([0, 0]);
+        }
+        else {
+            p = _pos([xy[0], xy[1]]);
+        }
+        // createElement svgContainer、circle
+        // appendChild in container
+        renderer.paint.apply(this, arguments);
+        // this.svg是svg节点对象
+        // 设置宽高
+        _attr(this.svg, {
+            "style": p,
+            "width": wh[0] || 0,
+            "height": wh[1] || 0
+        });
+    }
+};
+
+_super.renderer.paint = function (style) {
+    var s = _jp.extend({}, style);
+    // .....
+    if (this.node == null) {
+        this.node = this.makeNode(s);
+        this.svg.appendChild(this.node);
+    }
+    // .....
+}.bind(this);
+````
+
+````js
+/*
+ * SVG Dot Endpoint
+ */
+_jp.Endpoints.svg.Dot = function () {
+    _jp.Endpoints.Dot.apply(this, arguments);
+    SvgEndpoint.apply(this, arguments);
+    this.makeNode = function (style) {
+        return _node("circle", {
+            "cx": this.w / 2,
+            "cy": this.h / 2,
+            "r": this.radius
+        });
+    };
+};
+_node = function (name, attributes) {
+    attributes = attributes || {};
+    attributes.version = "1.1";
+    attributes.xmlns = ns.svg;
+    return _jp.createElementNS(ns.svg, name, null, null, attributes);
+},
+````

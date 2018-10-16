@@ -1758,6 +1758,7 @@
         }.bind(this);
 
         this.upListener = function (e) {
+            debugger;
             if (downAt) {
                 downAt = null;
                 this.params.unbind(document, "mousemove", this.moveListener);
@@ -1961,6 +1962,7 @@
                     matchingDroppables[i].setHover(this, false, e);
                 }
             }
+            console.log('intersectingDroppables:',Object.assign({},intersectingDroppables));
 
             _dispatch("drag", {el: this.el, pos: cPos, e: e, drag: this});
 
@@ -7061,7 +7063,7 @@
                 op = relativeToRoot ? op.offsetParent :
                     op.offsetParent === container ? null : op.offsetParent;
             }
-
+            // 如果容器可滚动，需要做处理
             // if container is scrolled and the element (or its offset parent) is not absolute or fixed, adjust accordingly.
             if (container != null && !relativeToRoot && (container.scrollTop > 0 || container.scrollLeft > 0)) {
                 var pp = el.offsetParent != null ? this.getStyle(el.offsetParent, "position") : "static",
@@ -9238,7 +9240,6 @@
                         });
 
                     this.connector.resetBounds();
-                    debugger;
                     this.connector.compute({
                         sourcePos: sAnchorP,
                         targetPos: tAnchorP,
@@ -10799,7 +10800,6 @@
              notes on this method in AbstractSegment.
              */
             this.findClosestPointOnPath = function (x, y) {
-                debugger;
                 var out = {
                     d: Infinity,
                     x: null,

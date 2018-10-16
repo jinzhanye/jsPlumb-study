@@ -267,3 +267,32 @@ paint: function (params) {
             }
         },
 ````
+
+`connector.compute` 获取 `segment` 信息
+
+`````js
+this.connector.compute({
+    sourcePos: sAnchorP,
+    targetPos: tAnchorP,
+    sourceEndpoint: this.endpoints[sIdx],
+    targetEndpoint: this.endpoints[tIdx],
+    "stroke-width": this._jsPlumb.paintStyleInUse.strokeWidth,
+    sourceInfo: sourceInfo,
+    targetInfo: targetInfo
+});
+
+
+// default.js
+this.compute = function (params) {
+    paintInfo = _prepareCompute.call(this, params);
+
+    _clearSegments();
+    this._compute(paintInfo, params);
+    this.x = paintInfo.points[0];
+    this.y = paintInfo.points[1];
+    this.w = paintInfo.points[2];
+    this.h = paintInfo.points[3];
+    this.segment = paintInfo.segment;
+    _updateSegmentProportions();
+};
+`````
